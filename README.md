@@ -54,7 +54,8 @@ COMPILAR.txt   cómo compilar
 - Emulador: **DuckStation**, de Connor McLaughlin ([@stenzek](https://github.com/stenzek))
   y colaboradores. Licencia CC-BY-NC-ND 4.0: binarios originales sin
   modificar, uso no comercial. https://www.duckstation.org/
-- Launcher: **Nyxen** — desarrollado 100% con inteligencia artificial.
+- Launcher: **Nyxen** — desarrollado 100% con inteligencia artificial,
+  como prueba del desarrollo de programas con IA.
 - "PlayStation" es marca de Sony Interactive Entertainment. Sin afiliación.
 - Este proyecto **no incluye** emulador, BIOS ni juegos: todo lo aporta el
   usuario. No nos hacemos responsables del mal uso.
