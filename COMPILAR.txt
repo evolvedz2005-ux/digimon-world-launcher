@@ -1,0 +1,26 @@
+================================================================
+ DIGIMON WORLD VICE PC — CÓMO COMPILAR (código abierto, por Nyxen)
+================================================================
+Necesitas: Windows + Python 3.12 o superior (de python.org, marca
+"Add python.exe to PATH" al instalar).
+
+PASOS:
+1. Abre una terminal (cmd o PowerShell) en la carpeta "launcher-py".
+2. Instala dependencias (una sola vez):
+     pip install customtkinter pyinstaller pillow
+3. Compila:
+     pyinstaller DigimonWorldVicePC.spec --noconfirm
+4. El programa sale en: launcher-py\dist\DigimonWorldVicePC.exe
+5. Para distribuirlo, junto al .exe pon: tutorial.txt y dmw.ico
+   (opcional, icono de la ventana).
+
+NOTAS:
+- Para JUGAR necesitas aparte: DuckStation portable oficial
+  (duckstation.org), tu BIOS (.bin) y tu juego (.cue/.iso/.chd).
+  El launcher te los pide con el asistente al abrirlo (ver
+  tutorial.txt). Nada de eso se incluye aquí por derechos de autor.
+- No modifiques los binarios de DuckStation: su licencia
+  (CC-BY-NC-ND, de Connor McLaughlin @stenzek y colaboradores)
+  solo permite redistribuirlos sin modificar y sin uso comercial.
+- Firma del autor original del launcher: Nyxen.
+================================================================

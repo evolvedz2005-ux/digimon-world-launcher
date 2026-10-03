@@ -1,0 +1,99 @@
+================================================================
+ DIGIMON WORLD VICE PC — TUTORIAL (por Nyxen)
+================================================================
+Este launcher NO incluye emulador, BIOS ni juego. Tú debes aportar
+los 3 archivos desde tus propios medios. Al abrirlo por primera vez
+verás el asistente "Agrega tus archivos".
+
+----------------------------------------------------------------
+PASO 0 · QUÉ NECESITAS (consíguelo ANTES de abrir el launcher)
+----------------------------------------------------------------
+1. EMULADOR DuckStation (gratis y legal, OBLIGATORIO versión portable):
+   Descarga de https://www.duckstation.org/ el archivo
+   "duckstation-windows-x64-release.zip" (versión portable, NO uses
+   el instalador .exe). Descomprímelo donde quieras, por ejemplo:
+     C:\Juegos\DuckStation\
+   Entra a esa carpeta y crea un archivo de texto VACÍO llamado
+   portable.txt junto al .exe (clic derecho → Nuevo → Documento de
+   texto → renómbralo a portable.txt). Sin ese archivo el launcher
+   no encuentra tus ajustes, BIOS ni partidas: la versión TIENE que
+   ser portable.
+   Dentro verás duckstation-qt-x64-ReleaseLTCG.exe (o similar).
+2. BIOS de PlayStation:
+   Consigue tu archivo .bin de arranque (ej. SCPH1001.BIN, 512 KB).
+   La BIOS tiene que estar DENTRO de la carpeta del emulador, en una
+   subcarpeta llamada bios, quedando así:
+     C:\Juegos\DuckStation\bios\SCPH1001.BIN
+   (El botón Importar del asistente la copia ahí solo por ti.)
+3. JUEGO:
+   Tu imagen del juego: .cue (+ su .bin), .iso o .chd.
+   Guárdala donde quieras, por ejemplo:
+     C:\Juegos\PS1\
+
+----------------------------------------------------------------
+PASO 1 · ABRE EL LAUNCHER Y COMPLETA EL ASISTENTE
+----------------------------------------------------------------
+- Abre "Digimon World Vice PC.exe".
+- Aparece "📂 Agrega tus archivos" con 3 pasos:
+  1 · Emulador → pulsa Examinar y elige el .exe de DuckStation.
+  2 · BIOS → pulsa Importar y elige tu .bin (se copia solo a la
+      carpeta bios del emulador).
+  3 · Juego → pulsa Examinar y elige tu .cue/.iso/.chd.
+- Cuando los 3 estén en verde ✓, pulsa ▶ Empezar.
+- Tus rutas se guardan en "rutas.json" junto al .exe. Si algún día
+  cambias de archivos, usa el botón "📂 Mis archivos" en JUGAR.
+
+----------------------------------------------------------------
+PASO 2 · ABRE EL JUEGO UNA VEZ ANTES DE TOCAR LOS GRÁFICOS
+----------------------------------------------------------------
+- MUY IMPORTANTE: la primera vez pulsa ▶ JUGAR sin cambiar nada en
+  la pestaña GRÁFICOS. DuckStation necesita abrir el juego una vez
+  para crear su archivo settings.ini; sin ese archivo el launcher no
+  tiene dónde guardar tus ajustes y los cambios no se aplicarán.
+- Tras jugar un rato (sales con Escape), cierra DuckStation y ya
+  puedes usar GRÁFICOS, MANDO y todo lo demás con normalidad.
+
+----------------------------------------------------------------
+PASO 3 · JUGAR Y AJUSTES
+----------------------------------------------------------------
+- Pulsa el gran botón ▶ JUGAR: verás "Entrando al mundo digital…"
+  con conteo 5→1 y luego abre el juego.
+- Activa "Pantalla completa" en el lateral si lo quieres a full.
+- Controles del juego (teclado) en la pestaña MANDO; gráficos
+  (resolución, presets) en GRÁFICOS; volumen y turbo en JUGAR.
+- F10 dentro del juego = captura (ver pestaña FOTOS).
+- F1/F2 = cargar/guardar estado rápido (teclas de DuckStation).
+
+----------------------------------------------------------------
+DÓNDE QUEDA CADA COSA
+----------------------------------------------------------------
+Junto al launcher: rutas.json (tus rutas), tutorial.txt (esta guía),
+respaldos/ (copias de tus partidas, se crea solo).
+Junto al emulador (versión portable obligatoria): bios/ (tu BIOS),
+settings.ini (ajustes que hace el launcher, se crea al abrir el juego
+la primera vez), memcards/ y savestates/ (tus partidas),
+screenshots/.
+Nada de esto se borra al actualizar el launcher: solo sustituye el
+.exe por la versión nueva.
+
+----------------------------------------------------------------
+PROBLEMAS COMUNES
+----------------------------------------------------------------
+- "Falta emulador/juego/BIOS" → abre 📂 Mis archivos y completa.
+- Cambiaste algo y no se aplica → cierra DuckStation si está abierto
+  (el botón 🔍 Diagnosticar sistema te lo dice).
+- El juego va lento → pestaña GRÁFICOS, preset ⚡ Rendimiento.
+- ¿Todo roto? Borra rutas.json y settings.ini del emulador y vuelve
+  a empezar el asistente (tus saves NO se tocan).
+
+----------------------------------------------------------------
+AVISO FINAL
+----------------------------------------------------------------
+Todo lo necesario para jugar (emulador, BIOS y juego) debe ser
+aportado por ti, el usuario. Este paquete solo contiene el launcher
+(de Nyxen), y el emulador es DuckStation, de Connor McLaughlin
+(stenzek) y colaboradores (CC-BY-NC-ND, binarios originales sin
+modificar, uso no comercial). "PlayStation" es marca de Sony; sin
+afiliación. No nos hacemos responsables del mal uso que le des al
+launcher ni a los archivos que uses con él.
+================================================================

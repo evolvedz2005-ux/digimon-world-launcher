@@ -1,0 +1,222 @@
+================================================================
+ SKILL: DIGIMON-WORLD-VICE-PC — LEER COMPLETO ANTES DE MODIFICAR
+================================================================
+INSTRUCCIONES PARA EL ASISTENTE (prioridad máxima):
+1. Lee este archivo ENTERO antes de tocar cualquier código. Aquí está
+   todo el contexto: arquitectura, archivos, claves y reglas.
+2. Launcher oficial = "Digimon World Vice PC.exe" (Python/CustomTkinter
+   congelado con PyInstaller). El launcher Electron (carpeta launcher/)
+   está desactualizado: NO lo uses como referencia ni lo modifiques
+   salvo que el usuario lo pida explícitamente.
+3. Fuente de verdad del código: digimon_vice_data/launcher-py/*.py
+   (ui.py + 7 módulos). El .exe se reconstruye, nunca se edita.
+4. REGLAS DE SEGURIDAD (obligatorias):
+   a) settings.ini, bios/, memcards/, savestates/, screenshots/ SOLO se
+      leen o se prueban en copias dentro de %TEMP%. Jamás escribas en
+      los reales durante pruebas.
+   b) Toda escritura real usa backup .bak y validación de valores
+      (listas blancas de Renderer/Filtros/Aspecto, rangos numéricos).
+   c) Verifica con py_compile cada .py tocado antes de reconstruir.
+   d) Tras CUALQUIER cambio en launcher-py/: reconstruye con
+      `pyinstaller DigimonWorldVicePC.spec --noconfirm` (workdir:
+      digimon_vice_data/launcher-py) y copia dist/DigimonWorldVicePC.exe
+      a la raíz como "Digimon World Vice PC.exe". Confirma fecha/tamaño.
+   e) DuckStation debe estar CERRADO al aplicar cambios (health.py lo
+      detecta por tasklist); avisa al usuario si está abierto.
+5. Formato de settings.ini: configparser con optionxform=str (claves
+   sensibles a mayúsculas). Booleanos en minúscula ("true"/"false").
+6. Firma del autor: "Nyxen" — mantener en banner, pie de ventana y
+   cabecera de módulos nuevos que crees (línea "© Nyxen").
+7. Idioma del usuario: español. Respuestas cortas y directas.
+8. Prohibido: adivinar formatos de DuckStation no verificados
+   (ej. GPU.FullscreenMode). Si una clave es dudosa, investiga la
+   fuente oficial o pregunta antes de escribirla.
+--- FIN DE INSTRUCCIONES, SIGUE EL REGISTRO ---
+================================================================
+ DIGIMON WORLD VICE PC — REGISTRO DE CAMBIOS (autor: Nyxen)
+ Sesión: 02/10/2026
+================================================================
+
+Launcher oficial: "Digimon World Vice PC.exe" (raíz de esta carpeta).
+Es copia de: digimon_vice_data/launcher-py/dist/DigimonWorldVicePC.exe
+Se genera con (desde digimon_vice_data/launcher-py):
+    pyinstaller DigimonWorldVicePC.spec --noconfirm
+y luego se copia a la raíz como "Digimon World Vice PC.exe".
+Existe otro launcher viejo en digimon_vice_data/launcher/ (Electron:
+main.js, index.html, renderer.js...). Solo tiene la pestaña GRÁFICOS;
+el resto de novedades están SOLO en el .exe de Python.
+
+----------------------------------------------------------------
+1) PESTAÑA GRÁFICOS (edita settings.ini de DuckStation)
+----------------------------------------------------------------
+- launcher-py/graphics.py (NUEVO): get_graphics()/set_graphics().
+  Lee/escribe con configparser preservando mayúsculas y el resto del
+  archivo; hace copia .bak. Claves que toca:
+    [GPU]  Renderer, ResolutionScale, TextureFilter,
+           SpriteTextureFilter (= mismo filtro), WidescreenHack, PGXPEnable
+    [Display] VSync, AspectRatio
+  Valores válidos (los que acepta DuckStation):
+    Renderer: Automatic, D3D11, D3D12, Vulkan, OpenGL, Software
+    ResolutionScale: 0,1,2,3,4,5,6,8,9 (0=automática)
+    TextureFilter: Nearest, Bilinear, JINC2, xBR
+    AspectRatio: "Auto (Game Native)", 4:3, 16:9
+- launcher-py/ui.py, vista view_gfx: selects + switches + Aplicar/
+  Restablecer. La "Resolución del juego" va primera y destacada.
+- Presets de un clic (ui.py, PRESETS): Rendimiento (1x/Nearest/todo
+  off), Equilibrado (3x-720p/Bilinear/PGXP/VSync), Ultra (5x-1080p/
+  Bilinear/PGXP/VSync). Mantienen el renderizador actual.
+
+----------------------------------------------------------------
+2) MANDO Y BIOS SEPARADOS (antes un solo botón "Mando / BIOS")
+----------------------------------------------------------------
+- launcher-py/controls.py (NUEVO): get_controls(), set_controls(),
+  get_raw_bindings(), tk_to_duck(). Lee/escribe [Pad1] como
+  "Keyboard/<tecla>" (24 botones: cruceta, Cruz/Círculo/Cuadrado/
+  Triángulo, Start/Select, L1-R3, sticks). Avisa si hay duplicados.
+- launcher-py/ui.py, vista view_pad: clic en un botón → "Pulsa
+  tecla…" → se captura con tk_to_duck() (Esc cancela). Botones
+  Aplicar / Recargar / Por defecto + aviso si algún botón usa mando
+  USB + botón "Abrir DuckStation (mando USB / avanzado)".
+- launcher-py/bios.py (NUEVO): list_bios(), import_bios(),
+  delete_bios() sobre digimon_vice_data/duckstation-windows-x64-
+  release/bios/. Acepta .bin (avisa si no pesa 512 KB).
+- launcher-py/ui.py, vista view_bios: lista con tamaño y ✓ si es
+  válida, Cambiar/importar (diálogo de archivo), Eliminar (con
+  confirmación), Carpeta, Recargar. El estado lateral se refresca
+  solo (refresh_status()).
+- Los botones "Mando" y "BIOS" del lateral izquierdo se ELIMINARON;
+  quedaron solo las pestañas superiores + "Abrir carpeta".
+
+----------------------------------------------------------------
+3) PESTAÑA SAVES (gestor de partidas)
+----------------------------------------------------------------
+- launcher-py/saves.py (NUEVO): list_saves(), backup_saves(),
+  restore_backup(), fmt_size(), fmt_date(). Lee
+  duckstation-windows-x64-release/memcards/*.mcd y savestates/.
+  Respaldos en vice/respaldos/respaldo-FECHA/ (subcarpetas
+  memcards/ y savestates/).
+- ui.py, vista view_saves: lista con tipo/tamaño/fecha, Crear
+  respaldo, Restaurar (pide carpeta + confirmación), Carpeta.
+
+----------------------------------------------------------------
+4) VOLUMEN Y TURBO (en pestaña JUGAR, ajustes rápidos)
+----------------------------------------------------------------
+- launcher-py/audio.py (NUEVO): get_audio()/set_audio(). Claves:
+    [Audio] OutputVolume (0-100), OutputMuted
+    [Main]  FastForwardSpeed (0=ilimitada, o 2/3/4/5)
+- ui.py, marco "quick": slider 🔊 (guarda al soltar) + selector
+  ⏩ Turbo (guarda al elegir).
+
+----------------------------------------------------------------
+5) PESTAÑA FOTOS (galería de capturas)
+----------------------------------------------------------------
+- launcher-py/photos.py (NUEVO): list_photos() (recientes primero),
+  delete_photo() (con protección de ruta), thumb_size().
+  Carpeta: duckstation-windows-x64-release/screenshots/.
+  Las fotos se toman con F10 dentro del juego.
+- ui.py, vista view_photos: miniaturas PIL (160px), nombre/tamaño/
+  fecha, botones Ver (ventana grande) / Abrir / Eliminar,
+  "Ver más" de 30 en 30, Recargar, Carpeta.
+
+----------------------------------------------------------------
+6) DIAGNÓSTICO DEL SISTEMA
+----------------------------------------------------------------
+- launcher-py/health.py (NUEVO, solo lectura): run_checks(),
+  overall(), report_text(). Revisa: emulador, ROM, BIOS (.bin),
+  settings.ini legible (GPU.Renderer, [Pad1]), si DuckStation sigue
+  abierto (tasklist, avisa cerrar antes de aplicar cambios),
+  memory cards y espacio libre en disco.
+- ui.py: botón "Diagnosticar sistema" en JUGAR → ventana con
+  semáforos ● verde/naranja/rojo, Recargar, Copiar informe, Cerrar.
+
+----------------------------------------------------------------
+7) BOTÓN JUGAR + CONTEO + VENTANA
+----------------------------------------------------------------
+- ui.py, play(): botón grande (alto 140, letra 36). Al pulsar hay
+  conteo 5→1 con cartel blanco en el lugar del botón: mensaje negro
+  "Entrando al mundo digital…" + número gigante que cambia
+  5 verde → 4 verde claro → 3 amarillo → 2 naranja → 1 rojo
+  (COUNT_COLORS). Luego abre el juego con build_cmd() de
+  launcher.py (-batch [-fullscreen] ROM). Anti-doble-clic con
+  bandera counting[].
+- Ventana redimensionable (mínimo 940x700), botón y tecla F11 para
+  pantalla completa (Esc sale). Firma en banner (✦ Nyxen) y pie
+  ("Desarrollado por Nyxen").
+- Firma "© Nyxen" en la cabecera de los 7 módulos .py.
+
+----------------------------------------------------------------
+ARCHIVOS DEL PROYECTO (rutas relativas a esta carpeta)
+----------------------------------------------------------------
+Digimon World Vice PC.exe ................ launcher final
+digimon_vice_data/launcher-py/ui.py ...... interfaz (pestañas y vistas)
+digimon_vice_data/launcher-py/launcher.py  rutas + lanzar juego
+digimon_vice_data/launcher-py/graphics.py  gráficos
+digimon_vice_data/launcher-py/controls.py  mando
+digimon_vice_data/launcher-py/bios.py ..... BIOS
+digimon_vice_data/launcher-py/saves.py .... saves/respaldos
+digimon_vice_data/launcher-py/audio.py .... volumen/turbo
+digimon_vice_data/launcher-py/photos.py ... galería
+digimon_vice_data/launcher-py/health.py ... diagnóstico
+digimon_vice_data/launcher-py/dist/ ....... exe recién compilado
+digimon_vice_data/launcher-py/build/ ...... temporales PyInstaller
+digimon_vice_data/duckstation-windows-x64-release/settings.ini
+  -> archivo que edita el launcher (siempre deja .bak al lado)
+digimon_vice_data/duckstation-windows-x64-release/bios/
+digimon_vice_data/vice/respaldos/ ......... respaldos de saves
+digimon_vice_data/launcher/ ............... launcher Electron viejo
+  (solo pestaña gráficos; pendiente espejar el resto si se quiere)
+
+----------------------------------------------------------------
+CÓMO VERIFICAR EN UNA PRÓXIMA SESIÓN
+----------------------------------------------------------------
+- Sintaxis: python3 -c "import py_compile; py_compile.compile(...)"
+- Lógica sin tocar la config real: copiar settings.ini a %TEMP% y
+  llamar get_/set_ con path temporal; igual para saves/bios/fotos.
+- Tras editar ui.py o módulos: reconstruir exe (comando de arriba)
+  y copiar a la raíz. Comprobar fecha del .exe resultante.
+- settings.ini real NO se tocó en pruebas; solo lecturas.
+
+----------------------------------------------------------------
+IDEAS PENDIENTES (propuestas, sin hacer)
+----------------------------------------------------------------
+- Guía de botones en pantalla (resumen del mapeo antes de jugar).
+- Mando USB real (mapear gamepad, hoy solo teclado + aviso).
+- Hotkeys editables (F1/F2/Tab...).
+- Perfiles de configuración (TV 4K, Portátil).
+- Espejar Mando/BIOS/Saves/Fotos en el launcher Electron.
+- Idioma ES/EN, temas, notas de versión.
+
+----------------------------------------------------------------
+9) LAUNCHER LIMPIO (sin emulador, BIOS ni juego incluidos)
+----------------------------------------------------------------
+El usuario aporta los 3 archivos; el launcher solo los configura.
+- launcher-py/paths.py (NUEVO): app_dir(), rutas.json (junto al exe),
+  load/save_rutas, resolve_emu/rom/bios_dir/settings/memcards/
+  savestates/screenshots, user_dir() (portable.txt junto al exe =
+  datos ahí; si no, %LOCALAPPDATA%/DuckStation), bios_files(),
+  all_ok(), validate_emu/rom, import_bios_file(). Si no hay rutas
+  pero existe el layout integrado anterior, se usa este (compatible
+  hacia atrás).
+- launcher.py: check() y build_cmd() ahora resuelven dinámico.
+- graphics.py, controls.py, audio.py: settings.ini perezoso
+  (path=None → resolve_settings()); al guardar crean el archivo si
+  falta la carpeta padre existe; si no hay emulador, error que manda
+  al asistente.
+- saves.py: memcards/savestates dinámicos; respaldos ahora en
+  <junto al exe>/respaldos/ (antes vice/respaldos/).
+- bios.py: carpeta bios dinámica; import delega a paths.
+- photos.py: screenshots dinámico.
+- health.py: reescrito con paths (mensajes "usa el asistente" si
+  falta algo; settings ausente = warn si hay emu).
+- ui.py: asistente inicial open_setup() (Toplevel 1-2-3: Examinar
+  exe / Importar BIOS / Examinar juego, validaciones, Empezar solo
+  con todo ✓); se abre solo si all_ok() es falso. Botón
+  "📂 Mis archivos" en JUGAR para reabrirlo. Acciones de carpetas
+  y DuckStation usan rutas resueltas. Icono: APP_DIR/dmw.ico y luego
+  DATA/dmw.ico. Etiqueta "ROM Vice" → "Juego".
+- tutorial.txt (NUEVO, junto al exe): guía de usuario con pasos,
+  rutas exactas, problemas comunes y nota legal (DuckStation CC-BY-
+  NC-ND sin modificar, juego/BIOS del usuario).
+- Paquete publicable (ZIP): solo .exe + tutorial.txt (+ dmw.ico).
+  NADA de duckstation/, vice/ (juego), bios/, rutas.json, saves.
+================================================================

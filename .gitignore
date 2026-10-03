@@ -1,0 +1,7 @@
+rutas.json
+*.bak
+__pycache__/
+dist/
+build/
+respaldos/
+
