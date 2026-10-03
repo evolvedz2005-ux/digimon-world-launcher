@@ -219,4 +219,6 @@ El usuario aporta los 3 archivos; el launcher solo los configura.
   NC-ND sin modificar, juego/BIOS del usuario).
 - Paquete publicable (ZIP): solo .exe + tutorial.txt (+ dmw.ico).
   NADA de duckstation/, vice/ (juego), bios/, rutas.json, saves.
+- El launcher fue desarrollado 100% con inteligencia artificial
+  (crédito agregado al README).
 ================================================================
