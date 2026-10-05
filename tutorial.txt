@@ -69,7 +69,8 @@ PASO 3 · JUGAR Y AJUSTES
   pulsa R1+Select y controla la evolución al instante (úsalo en
   partida nueva: no funciona en partidas ya creadas; guarda con F2
   y carga con F1, no uses el guardado normal del juego o habrá
-  problemas).
+  problemas; a veces hay que usar el fast-forward para que haga
+  efecto).
 - F10 dentro del juego = captura (ver pestaña FOTOS).
 - F1/F2 = cargar/guardar estado rápido, remapeables en MANDO.
 - TRUCOS: con el truco activo guarda con F2 y carga con F1
