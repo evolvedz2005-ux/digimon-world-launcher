@@ -1,12 +1,19 @@
-"""Mando DuckStation — lee/escribe [Pad1] de settings.ini (teclado).
+"""Mando DuckStation — lee/escribe [Pad1] de settings.ini (teclado y mando XInput).
+Los bindings se guardan completos ("Keyboard/K", "XInput-0/A").
 
 © Nyxen
 """
 import configparser
+import re
 import shutil
 from pathlib import Path
 
 from paths import resolve_settings
+
+_BINDING_RE = re.compile(r"^(Keyboard|XInput-\d+|SDL-\d+|DInput-\d+)/\S+$")
+
+STICK_THRESHOLD = 15000
+TRIGGER_THRESHOLD = 40
 
 
 def _resolve(path=None) -> Path | None:
@@ -25,14 +32,6 @@ def _load_ini(path=None) -> configparser.ConfigParser:
     except Exception:
         pass
     return cp
-
-
-def _split_binding(raw: str) -> str:
-    """'Keyboard/K' -> 'K'. Si es mando (SDL-x/...) lo devuelve tal cual."""
-    s = (raw or "").strip()
-    if "/" in s:
-        return s.split("/", 1)[1].strip() or s
-    return s
 
 
 # (clave ini, etiqueta visible)
@@ -65,23 +64,43 @@ BUTTONS = [
 BUTTON_KEYS = [k for k, _ in BUTTONS]
 
 DEFAULTS = {
-    "Up": "UpArrow", "Down": "DownArrow", "Left": "LeftArrow", "Right": "RightArrow",
-    "Cross": "K", "Circle": "L", "Square": "J", "Triangle": "I",
-    "Start": "Enter", "Select": "Backspace",
-    "L1": "Q", "R1": "E", "L2": "1", "R2": "3", "L3": "2", "R3": "4",
-    "LUp": "W", "LDown": "S", "LLeft": "A", "LRight": "D",
-    "RUp": "T", "RDown": "G", "RLeft": "F", "RRight": "H",
+    "Up": "Keyboard/UpArrow", "Down": "Keyboard/DownArrow",
+    "Left": "Keyboard/LeftArrow", "Right": "Keyboard/RightArrow",
+    "Cross": "Keyboard/K", "Circle": "Keyboard/L",
+    "Square": "Keyboard/J", "Triangle": "Keyboard/I",
+    "Start": "Keyboard/Enter", "Select": "Keyboard/Backspace",
+    "L1": "Keyboard/Q", "R1": "Keyboard/E",
+    "L2": "Keyboard/1", "R2": "Keyboard/3",
+    "L3": "Keyboard/2", "R3": "Keyboard/4",
+    "LUp": "Keyboard/W", "LDown": "Keyboard/S",
+    "LLeft": "Keyboard/A", "LRight": "Keyboard/D",
+    "RUp": "Keyboard/T", "RDown": "Keyboard/G",
+    "RLeft": "Keyboard/F", "RRight": "Keyboard/H",
 }
 
 
+def pretty_binding(full) -> str:
+    """'Keyboard/K' -> 'K'; 'XInput-0/A' -> '🎮 A'."""
+    s = str(full or "").strip()
+    if "/" in s:
+        dev, _, key = s.partition("/")
+        if dev == "Keyboard":
+            return key or s
+        if dev.split("-")[0] in ("XInput", "SDL", "DInput"):
+            return "🎮 " + (key or s)
+        return key or s
+    return s
+
+
 def get_controls(path=None) -> dict:
+    """Bindings completos de [Pad1], ej. {'Cross': 'Keyboard/K'}."""
     out = dict(DEFAULTS)
     try:
         cp = _load_ini(path)
         if cp.has_section("Pad1"):
             for k in BUTTON_KEYS:
                 if cp.has_option("Pad1", k):
-                    v = _split_binding(cp.get("Pad1", k))
+                    v = cp.get("Pad1", k).strip()
                     if v:
                         out[k] = v
     except Exception:
@@ -90,17 +109,8 @@ def get_controls(path=None) -> dict:
 
 
 def get_raw_bindings(path=None) -> dict:
-    """Devuelve el binding completo ('Keyboard/K' o 'SDL-0/...') por si hay mando."""
-    out = {}
-    try:
-        cp = _load_ini(path)
-        if cp.has_section("Pad1"):
-            for k in BUTTON_KEYS:
-                if cp.has_option("Pad1", k):
-                    out[k] = cp.get("Pad1", k).strip()
-    except Exception:
-        pass
-    return out
+    """Alias de get_controls (compatibilidad)."""
+    return get_controls(path)
 
 
 def set_controls(values: dict, path=None) -> dict:
@@ -108,19 +118,18 @@ def set_controls(values: dict, path=None) -> dict:
     for k in BUTTON_KEYS:
         v = str(values.get(k, "")).strip()
         if not v:
-            return {"ok": False, "error": f"Falta tecla para {k}."}
-        if len(v) > 32 or any(c in v for c in "= \t\n\r"):
-            return {"ok": False, "error": f"Tecla no válida para {k}: {v}"}
+            return {"ok": False, "error": f"Falta tecla/botón para {k}."}
+        if len(v) > 48 or not _BINDING_RE.match(v):
+            return {"ok": False, "error": f"Binding no válido para {k}: {v}"}
         cleaned[k] = v
-    # avisar duplicados de teclado (no bloquea, pero informa)
+    # avisar duplicados (no bloquea, pero informa)
     seen = {}
     dupes = set()
     for k, v in cleaned.items():
-        vl = v.lower()
-        if vl in seen:
-            dupes.add(v)
+        if v in seen:
+            dupes.add(pretty_binding(v))
         else:
-            seen[vl] = k
+            seen[v] = k
     p = _resolve(path)
     if p is None or not p.parent.is_dir():
         return {"ok": False, "error": "Configura el emulador primero (asistente inicial)."}
@@ -136,12 +145,16 @@ def set_controls(values: dict, path=None) -> dict:
         if not cp.has_option("Pad1", "Type"):
             cp.set("Pad1", "Type", "AnalogController")
         for k in BUTTON_KEYS:
-            cp.set("Pad1", k, f"Keyboard/{cleaned[k]}")
+            cp.set("Pad1", k, cleaned[k])
+        if any(v.startswith("XInput-") for v in cleaned.values()):
+            if not cp.has_section("InputSources"):
+                cp.add_section("InputSources")
+            cp.set("InputSources", "XInput", "true")
         with open(p, "w", encoding="utf-8") as f:
             cp.write(f)
         msg = "Mando guardado en settings.ini."
         if dupes:
-            msg += f" Ojo: tecla repetida ({', '.join(sorted(dupes))})."
+            msg += f" Ojo: repetido ({', '.join(sorted(dupes))})."
         return {"ok": True, "message": msg}
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "error": str(e)}
@@ -161,7 +174,9 @@ def get_hotkeys(path=None) -> dict:
         if cp.has_section("Hotkeys"):
             for k, _ in HOTKEYS:
                 if cp.has_option("Hotkeys", k):
-                    v = _split_binding(cp.get("Hotkeys", k))
+                    v = cp.get("Hotkeys", k).strip()
+                    if "/" in v:
+                        v = v.split("/", 1)[1].strip() or v
                     if v:
                         out[k] = v
     except Exception:
@@ -173,8 +188,14 @@ def set_hotkey(name: str, key: str, path=None) -> dict:
     if name not in HOTKEY_DEFAULTS:
         return {"ok": False, "error": f"Atajo no válido: {name}"}
     key = str(key or "").strip()
-    if not key or len(key) > 32 or any(c in key for c in "= \t\n\r"):
-        return {"ok": False, "error": f"Tecla no válida para {name}."}
+    if "/" in key:
+        if len(key) > 48 or not _BINDING_RE.match(key):
+            return {"ok": False, "error": f"Binding no válido para {name}: {key}"}
+        full = key
+    else:
+        if not key or len(key) > 32 or any(c in key for c in "= \t\n\r"):
+            return {"ok": False, "error": f"Tecla no válida para {name}."}
+        full = f"Keyboard/{key}"
     p = _resolve(path)
     if p is None or not p.parent.is_dir():
         return {"ok": False, "error": "Configura el emulador primero (asistente inicial)."}
@@ -187,10 +208,14 @@ def set_hotkey(name: str, key: str, path=None) -> dict:
         cp = _load_ini(p)
         if not cp.has_section("Hotkeys"):
             cp.add_section("Hotkeys")
-        cp.set("Hotkeys", name, f"Keyboard/{key}")
+        cp.set("Hotkeys", name, full)
+        if full.startswith("XInput-"):
+            if not cp.has_section("InputSources"):
+                cp.add_section("InputSources")
+            cp.set("InputSources", "XInput", "true")
         with open(p, "w", encoding="utf-8") as f:
             cp.write(f)
-        return {"ok": True, "message": f"Atajo guardado: {name} = {key}."}
+        return {"ok": True, "message": f"Atajo guardado: {name} = {pretty_binding(full)}."}
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "error": str(e)}
 
@@ -223,3 +248,113 @@ def tk_to_duck(keysym: str) -> str:
         return "Numpad" + (rest if len(rest) > 1 else rest.upper())
     # resto: capitalizar primera (ej: Delete -> Delete, Insert -> Insert)
     return keysym[:1].upper() + keysym[1:]
+
+
+# Botones XInput en orden de prioridad (máscara, nombre DuckStation)
+XINPUT_BUTTONS = [
+    (0x0001, "DPadUp"), (0x0002, "DPadDown"),
+    (0x0004, "DPadLeft"), (0x0008, "DPadRight"),
+    (0x0010, "Start"), (0x0020, "Back"),
+    (0x0100, "LeftShoulder"), (0x0200, "RightShoulder"),
+    (0x0040, "LeftStick"), (0x0080, "RightStick"),
+    (0x1000, "A"), (0x2000, "B"), (0x4000, "X"), (0x8000, "Y"),
+    (0x0400, "Guide"),
+]
+
+_xinput_dll = None
+
+
+def _get_xinput_dll():
+    global _xinput_dll
+    if _xinput_dll is not None:
+        return _xinput_dll
+    import ctypes
+
+    for name in ("xinput1_4.dll", "xinput1_3.dll", "xinput9_1_0.dll"):
+        try:
+            _xinput_dll = ctypes.WinDLL(name)
+            return _xinput_dll
+        except OSError:
+            pass
+    _xinput_dll = False
+    return False
+
+
+def _read_pad(index: int):
+    """Devuelve dict con botones/ejes o None si desconectado."""
+    import ctypes
+
+    dll = _get_xinput_dll()
+    if not dll:
+        return None
+
+    class _Pad(ctypes.Structure):
+        _fields_ = [("buttons", ctypes.c_ushort),
+                    ("lt", ctypes.c_ubyte), ("rt", ctypes.c_ubyte),
+                    ("lx", ctypes.c_short), ("ly", ctypes.c_short),
+                    ("rx", ctypes.c_short), ("ry", ctypes.c_short)]
+
+    class _State(ctypes.Structure):
+        _fields_ = [("packet", ctypes.c_ulong), ("gamepad", _Pad)]
+
+    try:
+        st = _State()
+        if dll.XInputGetState(index, ctypes.byref(st)) != 0:
+            return None
+        g = st.gamepad
+        return {"buttons": g.buttons, "lt": g.lt, "rt": g.rt,
+                "lx": g.lx, "ly": g.ly, "rx": g.rx, "ry": g.ry}
+    except Exception:
+        return None
+
+
+def pad_pressed_suffixes(index: int):
+    """Sufijos DuckStation pulsados ahora en ese mando (set, ordenado)."""
+    st = _read_pad(index)
+    if st is None:
+        return None
+    out = []
+    for mask, name in XINPUT_BUTTONS:
+        if st["buttons"] & mask:
+            out.append(name)
+    if st["lt"] > TRIGGER_THRESHOLD:
+        out.append("+LeftTrigger")
+    if st["rt"] > TRIGGER_THRESHOLD:
+        out.append("+RightTrigger")
+    # Y invertido en XInput respecto a SDL: arriba físico = -LeftY
+    if st["lx"] > STICK_THRESHOLD:
+        out.append("+LeftX")
+    elif st["lx"] < -STICK_THRESHOLD:
+        out.append("-LeftX")
+    if st["ly"] > STICK_THRESHOLD:
+        out.append("-LeftY")
+    elif st["ly"] < -STICK_THRESHOLD:
+        out.append("+LeftY")
+    if st["rx"] > STICK_THRESHOLD:
+        out.append("+RightX")
+    elif st["rx"] < -STICK_THRESHOLD:
+        out.append("-RightX")
+    if st["ry"] > STICK_THRESHOLD:
+        out.append("-RightY")
+    elif st["ry"] < -STICK_THRESHOLD:
+        out.append("+RightY")
+    return set(out)
+
+
+def first_connected_pad():
+    """Índice del primer mando conectado o None."""
+    for i in range(4):
+        if _read_pad(i) is not None:
+            return i
+    return None
+
+
+def count_xinput_pads() -> int | None:
+    """N° de mandos XInput conectados (None si no se pudo comprobar)."""
+    if not _get_xinput_dll():
+        return None
+    n = 0
+    for i in range(4):
+        if _read_pad(i) is not None:
+            n += 1
+    return n

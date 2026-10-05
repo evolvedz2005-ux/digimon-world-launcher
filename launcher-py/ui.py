@@ -22,7 +22,8 @@ from graphics import (
     ALLOWED_ASPECTS,
 )
 from controls import (BUTTONS, DEFAULTS as PAD_DEFAULTS, get_controls, get_raw_bindings,
-                      set_controls, tk_to_duck, get_hotkeys, set_hotkey, HOTKEY_DEFAULTS, HOTKEYS)
+                      set_controls, tk_to_duck, get_hotkeys, set_hotkey, HOTKEY_DEFAULTS, HOTKEYS,
+                      count_xinput_pads, pretty_binding, pad_pressed_suffixes, first_connected_pad)
 from bios import list_bios, import_bios, delete_bios
 from saves import list_saves, fmt_size, fmt_date, backup_saves, restore_backup
 from audio import get_audio, set_audio, TURBO_OPTIONS, TURBO_LABELS
@@ -609,12 +610,15 @@ capturing = {"target": None}
 
 ctk.CTkLabel(view_pad, text="🎮  MANDO · Jugador 1 (teclado)",
              font=ctk.CTkFont(size=14, weight="bold"), text_color=ORANGE).pack(anchor="w", padx=18, pady=(4, 2))
-pad_hint = ctk.CTkLabel(view_pad, text="Pulsa una tecla y luego pulsa la tecla nueva. Esc cancela.",
+pad_hint = ctk.CTkLabel(view_pad, text="Pulsa una tecla o un botón/stick del mando y luego la entrada nueva. Esc cancela.",
                         font=ctk.CTkFont(size=11), text_color=DIM)
 pad_hint.pack(anchor="w", padx=18, pady=(0, 4))
 pad_usb_hint = ctk.CTkLabel(view_pad, text="", font=ctk.CTkFont(size=11, weight="bold"),
                             text_color=CYAN, wraplength=500, justify="left")
 pad_usb_hint.pack(anchor="w", padx=18)
+pad_usb_pad = ctk.CTkLabel(view_pad, text="", font=ctk.CTkFont(size=11, weight="bold"),
+                           text_color=GREEN, wraplength=500, justify="left")
+pad_usb_pad.pack(anchor="w", padx=18)
 
 pad_rows = ctk.CTkScrollableFrame(view_pad, fg_color="#0a0e18", border_color=EDGE,
                                   border_width=1, height=230, corner_radius=10)
@@ -634,7 +638,7 @@ def build_pad_rows():
         row.pack(fill="x", padx=8, pady=1)
         ctk.CTkLabel(row, text=label, font=ctk.CTkFont(size=12), text_color=TEXT,
                      width=220, anchor="w").pack(side="left")
-        b = ctk.CTkButton(row, text=pad_pending.get(key, "?"), width=150,
+        b = ctk.CTkButton(row, text=pretty_binding(pad_pending.get(key, "?")), width=150,
                           fg_color=PANEL, border_color=EDGE, border_width=1, text_color=CYAN,
                           font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
                           command=lambda k=key: start_capture("pad", k))
@@ -652,6 +656,44 @@ def _target_button(kind, key):
     return pad_btns[key] if kind == "pad" else hk_btns[key]
 
 
+usb_poll = {"on": False, "last": "init"}
+
+
+def _update_usb_label():
+    n = count_xinput_pads()
+    usb_poll["last"] = n
+    try:
+        if n is None:
+            pad_usb_pad.configure(text="")
+        elif n > 0:
+            pad_usb_pad.configure(
+                text=f"🎮 Mando USB detectado: {n} conectado(s). Mapea sus botones con Abrir DuckStation.")
+        else:
+            pad_usb_pad.configure(text="🎮 Sin mando USB detectado. Revisa conexión/drivers.")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def poll_usb_pad():
+    try:
+        if current_view.get("name") == "pad" and capturing.get("target") is None:
+            n = count_xinput_pads()
+            if n != usb_poll["last"]:
+                _update_usb_label()
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        root.after(2000, poll_usb_pad)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def ensure_usb_poll():
+    if not usb_poll["on"]:
+        usb_poll["on"] = True
+        root.after(2000, poll_usb_pad)
+
+
 def reload_pad_form():
     pad_pending.clear()
     pad_pending.update(get_controls())
@@ -659,6 +701,8 @@ def reload_pad_form():
     hk_pending.update(get_hotkeys())
     build_pad_rows()
     build_hk_rows()
+    _update_usb_label()
+    ensure_usb_poll()
     raw = get_raw_bindings()
     usb = sorted(k for k, v in raw.items() if v and not v.startswith("Keyboard/"))
     if usb:
@@ -674,9 +718,63 @@ def start_capture(kind, key):
     if capturing["target"] is not None:
         cancel_capture()
     capturing["target"] = (kind, key)
-    _target_button(kind, key).configure(text="Pulsa tecla…")
+    _target_button(kind, key).configure(text="Pulsa tecla o botón…")
+    idx = first_connected_pad()
+    capturing["pad"] = idx
+    try:
+        capturing["base"] = pad_pressed_suffixes(idx) if idx is not None else set()
+    except Exception:  # noqa: BLE001
+        capturing["base"] = set()
     root.bind("<Key>", on_capture)
     root.focus_set()
+    try:
+        root.after(60, poll_capture_pad)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def poll_capture_pad():
+    target = capturing.get("target")
+    if target is None:
+        return
+    try:
+        idx = capturing.get("pad")
+        if idx is None:
+            idx = first_connected_pad()
+            if idx is None:
+                root.after(60, poll_capture_pad)
+                return
+            capturing["pad"] = idx
+            capturing["base"] = pad_pressed_suffixes(idx) or set()
+        cur = pad_pressed_suffixes(idx) or set()
+        base = capturing.get("base") or set()
+        new = sorted(cur - base)
+        if new:
+            assign_capture_binding(target, new[0], idx)
+            return
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        root.after(60, poll_capture_pad)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def assign_capture_binding(target, suffix, idx):
+    kind, key = target
+    full = f"XInput-{idx}/{suffix}"
+    if kind == "pad":
+        pad_pending[key] = full
+    else:
+        hk_pending[key] = full
+    capturing["target"] = None
+    try:
+        root.unbind("<Key>")
+    except Exception:  # noqa: BLE001
+        pass
+    _target_button(kind, key).configure(text=pretty_binding(full))
+    if pad_msg is not None:
+        pad_msg.configure(text=f"{key} → mando ({suffix}). Pulsa Aplicar para guardar.")
 
 
 def cancel_capture():
@@ -689,7 +787,7 @@ def cancel_capture():
     if target is not None:
         kind, key = target
         try:
-            _target_button(kind, key).configure(text=_target_text(kind, key))
+            _target_button(kind, key).configure(text=pretty_binding(_target_text(kind, key)))
         except Exception:  # noqa: BLE001
             pass  # filas aún no construidas
 
@@ -706,7 +804,7 @@ def on_capture(event):
         return "break"
     kind, key = target
     if kind == "pad":
-        pad_pending[key] = duck
+        pad_pending[key] = f"Keyboard/{duck}"
     else:
         hk_pending[key] = duck
     capturing["target"] = None
@@ -714,13 +812,21 @@ def on_capture(event):
         root.unbind("<Key>")
     except Exception:  # noqa: BLE001
         pass
-    _target_button(kind, key).configure(text=duck)
+    _target_button(kind, key).configure(
+        text=pretty_binding(pad_pending[key] if kind == "pad" else hk_pending[key]))
     if pad_msg is not None:
         pad_msg.configure(text=f"{key} → {duck}. Pulsa Aplicar para guardar.")
     return "break"
 
 
 def apply_pad():
+    raw = get_raw_bindings()
+    usb = sorted(k for k, v in raw.items() if v and not v.startswith("Keyboard/"))
+    if usb and not messagebox.askyesno(
+            "Sobreescribir mando",
+            f"Tienes {len(usb)} botón(es) en mando USB ({', '.join(usb)}).\n"
+            "Aplicar los cambiará a TECLADO. ¿Seguir?"):
+        return
     res = set_controls(pad_pending)
     hk_bad = ""
     for _name, _key in hk_pending.items():
@@ -740,9 +846,9 @@ def apply_pad():
 
 def reload_pad_rows_only():
     for key, btn in pad_btns.items():
-        btn.configure(text=pad_pending.get(key, "?"))
+        btn.configure(text=pretty_binding(pad_pending.get(key, "?")))
     for key, btn in hk_btns.items():
-        btn.configure(text=hk_pending.get(key, "?"))
+        btn.configure(text=pretty_binding(hk_pending.get(key, "?")))
 
 
 def reset_pad():
@@ -778,7 +884,7 @@ def build_hk_rows():
         row.pack(fill="x", padx=8, pady=1)
         ctk.CTkLabel(row, text=HK_LABELS.get(key, key), font=ctk.CTkFont(size=12), text_color=TEXT,
                      width=220, anchor="w").pack(side="left")
-        b = ctk.CTkButton(row, text=hk_pending.get(key, "?"), width=150,
+        b = ctk.CTkButton(row, text=pretty_binding(hk_pending.get(key, "?")), width=150,
                           fg_color=PANEL, border_color=EDGE, border_width=1, text_color=CYAN,
                           font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
                           command=lambda k=key: start_capture("hk", k))
@@ -1192,9 +1298,11 @@ VIEWS = {"play": view_play, "gfx": view_gfx, "pad": view_pad, "bios": view_bios,
          "photos": view_photos}
 TABS = {"play": tab_play, "gfx": tab_gfx, "pad": tab_pad, "bios": tab_bios, "saves": tab_saves,
         "photos": tab_photos}
+current_view = {"name": "play"}
 
 
 def show_view(name):
+    current_view["name"] = name
     for v in VIEWS.values():
         v.pack_forget()
     VIEWS[name].pack(fill="both", expand=True, padx=0, pady=0)

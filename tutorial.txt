@@ -60,7 +60,8 @@ PASO 3 · JUGAR Y AJUSTES
 - Pulsa el gran botón ▶ JUGAR: verás "Entrando al mundo digital…"
   con conteo 5→1 y luego abre el juego.
 - Activa "Pantalla completa" en el lateral si lo quieres a full.
-- Controles del juego (teclado) en la pestaña MANDO, incluida la
+- Controles en la pestaña MANDO: teclado y mando USB (pulsa el
+  botón y luego la tecla o el botón/stick del mando), incluida la
   tecla de ⏩ turbo; gráficos (resolución, presets) en GRÁFICOS;
   volumen y turbo en JUGAR.
 - TRUCOS en JUGAR: el cheat Control de evolución viene desactivado;

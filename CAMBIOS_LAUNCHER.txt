@@ -243,6 +243,11 @@ El usuario aporta los 3 archivos; el launcher solo los configura.
 ----------------------------------------------------------------
 - MANDO: filas remapeables ⏩ Turbo + 💾 Guardar estado (F2) +
   📂 Cargar estado (F1); comparten captura/Aplicar/Recargar/Defecto.
+- MANDO USB: detector XInput (línea "mando detectado/sin detectar")
+  y confirmación antes de que Aplicar sobrescriba botones USB con
+  teclado (antes lo hacía en silencio).
+- MANDO: captura con botones/sticks del mando (bindings XInput-0/…,
+  activa [InputSources] XInput solo); atajos F2/F1 remapeables.
 - Avisos rojos "DuckStation cerrado" en MANDO y TRUCOS.
 - TRUCOS: botón 📖 Descripción (popup), aviso partida nueva,
   consejo guardar con F2/F1.
