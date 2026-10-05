@@ -65,7 +65,10 @@ PASO 3 · JUGAR Y AJUSTES
   volumen y turbo en JUGAR.
 - TRUCOS en JUGAR: el cheat Control de evolución viene desactivado;
   actívalo con su interruptor (se respeta tu elección). En el juego
-  pulsa R1+Select y controla la evolución al instante.
+  pulsa R1+Select y controla la evolución al instante (úsalo en
+  partida nueva: no funciona en partidas ya creadas; tras cargar
+  puede tardar un poco en evolucionar, usa la tecla de turbo justo
+  después de la combinación).
 - F10 dentro del juego = captura (ver pestaña FOTOS).
 - F1/F2 = cargar/guardar estado rápido (teclas de DuckStation).
 

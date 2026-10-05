@@ -323,7 +323,7 @@ vol_slider.bind("<ButtonRelease-1>", _on_vol_release)
 turbo_menu.configure(command=lambda _c: _save_audio_quick())
 
 # ---- TRUCOS: cheat Vice siempre activo (interruptor) ----
-from cheats import get_cheat_state, set_cheat_enabled, CHEAT_NAME
+from cheats import get_cheat_state, set_cheat_enabled, CHEAT_NAME, CHEAT_DESC
 
 cheat_var = tk.BooleanVar(value=True)
 
@@ -334,9 +334,26 @@ ctk.CTkLabel(truco, text="💊  TRUCOS", font=ctk.CTkFont(size=12, weight="bold"
 cheat_switch = ctk.CTkSwitch(truco, text=CHEAT_NAME, variable=cheat_var,
                              progress_color=ORANGE, font=ctk.CTkFont(size=12))
 cheat_switch.pack(side="left", padx=4)
-ctk.CTkLabel(view_play, text="Controla la evolución de tu Digimon: con el interruptor activado, pulsa R1+Select en campo y la evolución se dispara al instante, sin esperar a que ocurra sola. Sirve para evolucionar cuando TÚ quieras. Para cambiarlo, cierra DuckStation primero.",
-             font=ctk.CTkFont(size=11), text_color=DIM,
-             wraplength=500, justify="left").pack(anchor="w", padx=20, pady=(2, 0))
+ctk.CTkButton(truco, text="📖  Descripción", width=110, fg_color="transparent",
+              border_color=EDGE, border_width=1, text_color=CYAN,
+              command=lambda: show_cheat_desc()).pack(side="right", padx=10)
+ctk.CTkLabel(view_play, text="(Úsalo en partida nueva: no funciona en partidas ya creadas.)",
+             font=ctk.CTkFont(size=11, weight="bold"), text_color=RED,
+             wraplength=500, justify="left").pack(anchor="w", padx=20, pady=(4, 2))
+
+
+def show_cheat_desc():
+    win = ctk.CTkToplevel(root)
+    win.title("Control de evolución")
+    win.geometry("460x340")
+    win.resizable(False, False)
+    win.configure(fg_color=BG)
+    ctk.CTkLabel(win, text="💊  Control de evolución",
+                 font=ctk.CTkFont(size=15, weight="bold"), text_color=ORANGE).pack(pady=(14, 6))
+    ctk.CTkLabel(win, text=CHEAT_DESC, font=ctk.CTkFont(size=12), text_color=TEXT,
+                 wraplength=400, justify="left").pack(padx=16, pady=(0, 10))
+    ctk.CTkButton(win, text="Cerrar", fg_color=ORANGE, text_color="#1a0e00",
+                  command=win.destroy).pack(fill="x", padx=16, pady=(0, 14))
 
 
 def _on_cheat_toggle():

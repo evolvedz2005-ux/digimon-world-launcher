@@ -19,10 +19,21 @@ GAME_INI = "SLUS-01032.ini"
 CHEAT_BLOCK = """[Control de evolución]
 Type = Gameshark
 Activation = EndFrame
-Description = Controla la evolución de tu Digimon: pulsa R1+Select en campo, efecto al instante. evoTimer=144.
+Description = Controla la evolución de tu Digimon: pulsa R1+Select en campo, efecto al instante. evoTimer=144. (Usar en partida nueva.)
 Author = Nyxen
 D4000000 0108
 801384B6 0090"""
+
+CHEAT_DESC = (
+    "Controla la evolución de tu Digimon: con el interruptor activado, "
+    "pulsa R1+Select en campo y la evolución se dispara sin esperar a "
+    "que ocurra sola. Sirve para evolucionar cuando TÚ quieras.\n\n"
+    "• Tras cargar partida puede tardar un poco en evolucionar: "
+    "usa la tecla de fast-forward justo después de la combinación para "
+    "pasar la espera rápido.\n"
+    "• Úsalo en partida nueva: no funciona en partidas ya creadas.\n"
+    "• Para activar o desactivar, cierra DuckStation primero."
+)
 
 
 def _is_ours(name: str) -> bool:
