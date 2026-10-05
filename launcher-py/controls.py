@@ -147,6 +147,52 @@ def set_controls(values: dict, path=None) -> dict:
         return {"ok": False, "error": str(e)}
 
 
+HOTKEYS = [("FastForward", "Turbo (fast-forward)")]
+HOTKEY_DEFAULTS = {"FastForward": "Tab"}
+
+
+def get_hotkeys(path=None) -> dict:
+    """{'FastForward': 'Tab'} — atajos de [Hotkeys]."""
+    out = dict(HOTKEY_DEFAULTS)
+    try:
+        cp = _load_ini(path)
+        if cp.has_section("Hotkeys"):
+            for k, _ in HOTKEYS:
+                if cp.has_option("Hotkeys", k):
+                    v = _split_binding(cp.get("Hotkeys", k))
+                    if v:
+                        out[k] = v
+    except Exception:
+        pass
+    return out
+
+
+def set_hotkey(name: str, key: str, path=None) -> dict:
+    if name not in HOTKEY_DEFAULTS:
+        return {"ok": False, "error": f"Atajo no válido: {name}"}
+    key = str(key or "").strip()
+    if not key or len(key) > 32 or any(c in key for c in "= \t\n\r"):
+        return {"ok": False, "error": f"Tecla no válida para {name}."}
+    p = _resolve(path)
+    if p is None or not p.parent.is_dir():
+        return {"ok": False, "error": "Configura el emulador primero (asistente inicial)."}
+    try:
+        if p.is_file():
+            shutil.copyfile(p, p.with_suffix(".ini.bak"))
+    except Exception:
+        pass
+    try:
+        cp = _load_ini(p)
+        if not cp.has_section("Hotkeys"):
+            cp.add_section("Hotkeys")
+        cp.set("Hotkeys", name, f"Keyboard/{key}")
+        with open(p, "w", encoding="utf-8") as f:
+            cp.write(f)
+        return {"ok": True, "message": f"Turbo guardado: {key}."}
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "error": str(e)}
+
+
 # Map keysym Tk -> nombre DuckStation
 _TK_MAP = {
     "Up": "UpArrow", "Down": "DownArrow", "Left": "LeftArrow", "Right": "RightArrow",

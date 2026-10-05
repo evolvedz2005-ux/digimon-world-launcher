@@ -137,6 +137,16 @@ def resolve_screenshots() -> Path | None:
     return u / "screenshots" if u is not None else None
 
 
+def resolve_cheats() -> Path | None:
+    u = user_dir()
+    return u / "cheats" if u is not None else None
+
+
+def resolve_gamesettings() -> Path | None:
+    u = user_dir()
+    return u / "gamesettings" if u is not None else None
+
+
 def bios_files() -> list:
     d = resolve_bios_dir()
     if d is None or not d.is_dir():

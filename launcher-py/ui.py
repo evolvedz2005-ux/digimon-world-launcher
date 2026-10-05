@@ -21,7 +21,8 @@ from graphics import (
     ALLOWED_FILTERS,
     ALLOWED_ASPECTS,
 )
-from controls import BUTTONS, DEFAULTS as PAD_DEFAULTS, get_controls, get_raw_bindings, set_controls, tk_to_duck
+from controls import (BUTTONS, DEFAULTS as PAD_DEFAULTS, get_controls, get_raw_bindings,
+                      set_controls, tk_to_duck, get_hotkeys, set_hotkey, HOTKEY_DEFAULTS)
 from bios import list_bios, import_bios, delete_bios
 from saves import list_saves, fmt_size, fmt_date, backup_saves, restore_backup
 from audio import get_audio, set_audio, TURBO_OPTIONS, TURBO_LABELS
@@ -321,6 +322,43 @@ vol_slider.configure(command=_on_vol_move)
 vol_slider.bind("<ButtonRelease-1>", _on_vol_release)
 turbo_menu.configure(command=lambda _c: _save_audio_quick())
 
+# ---- TRUCOS: cheat Vice siempre activo (interruptor) ----
+from cheats import get_cheat_state, set_cheat_enabled, CHEAT_NAME
+
+cheat_var = tk.BooleanVar(value=True)
+
+truco = ctk.CTkFrame(view_play, fg_color="#0a0e18", border_color=EDGE, border_width=1, corner_radius=10)
+truco.pack(fill="x", padx=18, pady=(8, 0))
+ctk.CTkLabel(truco, text="💊  TRUCOS", font=ctk.CTkFont(size=12, weight="bold"),
+             text_color=ORANGE).pack(side="left", padx=(10, 2))
+cheat_switch = ctk.CTkSwitch(truco, text=CHEAT_NAME, variable=cheat_var,
+                             progress_color=ORANGE, font=ctk.CTkFont(size=12))
+cheat_switch.pack(side="left", padx=4)
+ctk.CTkLabel(view_play, text="Controla la evolución de tu Digimon: con el interruptor activado, pulsa R1+Select en campo y la evolución se dispara al instante, sin esperar a que ocurra sola. Sirve para evolucionar cuando TÚ quieras. Para cambiarlo, cierra DuckStation primero.",
+             font=ctk.CTkFont(size=11), text_color=DIM,
+             wraplength=500, justify="left").pack(anchor="w", padx=20, pady=(2, 0))
+
+
+def _on_cheat_toggle():
+    res = set_cheat_enabled(bool(cheat_var.get()))
+    if msg is not None:
+        msg.configure(text=res.get("message", res.get("error", "")))
+
+
+cheat_switch.configure(command=_on_cheat_toggle)
+
+
+def reload_cheat():
+    stc = get_cheat_state()
+    if not stc["available"]:
+        cheat_switch.configure(state="disabled")
+        cheat_var.set(False)
+        return
+    cheat_switch.configure(state="normal")
+    # por defecto desactivado: el jugador lo activa con el interruptor
+    cheat_var.set(bool(stc["installed"] and stc["enabled"]))
+
+
 ctk.CTkButton(view_play, text="🔍  Diagnosticar sistema", command=lambda: open_diagnose(),
               fg_color="transparent", border_color=EDGE, border_width=1,
               text_color=TEXT).pack(fill="x", padx=18, pady=(6, 0))
@@ -545,7 +583,9 @@ reset_btn.configure(command=reset_gfx)
 # ---- vista MANDO (remapa el teclado del Jugador 1 en settings.ini) ----
 pad_pending = dict(get_controls())
 pad_btns = {}
-capturing = {"key": None}
+hk_pending = dict(get_hotkeys())
+hk_btns = {}
+capturing = {"target": None}
 
 ctk.CTkLabel(view_pad, text="🎮  MANDO · Jugador 1 (teclado)",
              font=ctk.CTkFont(size=14, weight="bold"), text_color=ORANGE).pack(anchor="w", padx=18, pady=(4, 2))
@@ -577,15 +617,28 @@ def build_pad_rows():
         b = ctk.CTkButton(row, text=pad_pending.get(key, "?"), width=150,
                           fg_color=PANEL, border_color=EDGE, border_width=1, text_color=CYAN,
                           font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
-                          command=lambda k=key: start_capture(k))
+                          command=lambda k=key: start_capture("pad", k))
         b.pack(side="right")
         pad_btns[key] = b
+
+
+def _target_text(kind, key):
+    if kind == "pad":
+        return pad_pending.get(key, "?")
+    return hk_pending.get(key, "?")
+
+
+def _target_button(kind, key):
+    return pad_btns[key] if kind == "pad" else hk_btns[key]
 
 
 def reload_pad_form():
     pad_pending.clear()
     pad_pending.update(get_controls())
+    hk_pending.clear()
+    hk_pending.update(get_hotkeys())
     build_pad_rows()
+    build_hk_rows()
     raw = get_raw_bindings()
     usb = sorted(k for k, v in raw.items() if v and not v.startswith("Keyboard/"))
     if usb:
@@ -597,29 +650,33 @@ def reload_pad_form():
         pad_msg.configure(text="Listo. Pulsa una tecla para remapearla.")
 
 
-def start_capture(key):
-    if capturing["key"] is not None:
+def start_capture(kind, key):
+    if capturing["target"] is not None:
         cancel_capture()
-    capturing["key"] = key
-    pad_btns[key].configure(text="Pulsa tecla…")
+    capturing["target"] = (kind, key)
+    _target_button(kind, key).configure(text="Pulsa tecla…")
     root.bind("<Key>", on_capture)
     root.focus_set()
 
 
 def cancel_capture():
-    key = capturing["key"]
-    capturing["key"] = None
+    target = capturing["target"]
+    capturing["target"] = None
     try:
         root.unbind("<Key>")
     except Exception:  # noqa: BLE001
         pass
-    if key is not None and key in pad_btns:
-        pad_btns[key].configure(text=pad_pending.get(key, "?"))
+    if target is not None:
+        kind, key = target
+        try:
+            _target_button(kind, key).configure(text=_target_text(kind, key))
+        except Exception:  # noqa: BLE001
+            pass  # filas aún no construidas
 
 
 def on_capture(event):
-    key = capturing["key"]
-    if key is None:
+    target = capturing["target"]
+    if target is None:
         return "break"
     if event.keysym in ("Escape",):
         cancel_capture()
@@ -627,13 +684,17 @@ def on_capture(event):
     duck = tk_to_duck(event.keysym)
     if not duck:
         return "break"
-    pad_pending[key] = duck
-    capturing["key"] = None
+    kind, key = target
+    if kind == "pad":
+        pad_pending[key] = duck
+    else:
+        hk_pending[key] = duck
+    capturing["target"] = None
     try:
         root.unbind("<Key>")
     except Exception:  # noqa: BLE001
         pass
-    pad_btns[key].configure(text=duck)
+    _target_button(kind, key).configure(text=duck)
     if pad_msg is not None:
         pad_msg.configure(text=f"{key} → {duck}. Pulsa Aplicar para guardar.")
     return "break"
@@ -641,19 +702,29 @@ def on_capture(event):
 
 def apply_pad():
     res = set_controls(pad_pending)
+    res_hk = set_hotkey("FastForward", hk_pending.get("FastForward", "Tab"))
     if pad_msg is not None:
-        pad_msg.configure(text=res.get("message", res.get("error", "")))
+        if res.get("ok") and res_hk.get("ok"):
+            pad_msg.configure(text=res.get("message", "") + f" Turbo: {hk_pending.get('FastForward')}.")
+        elif not res.get("ok"):
+            pad_msg.configure(text=res.get("error", ""))
+        else:
+            pad_msg.configure(text=res_hk.get("error", ""))
     reload_pad_rows_only()
 
 
 def reload_pad_rows_only():
     for key, btn in pad_btns.items():
         btn.configure(text=pad_pending.get(key, "?"))
+    for key, btn in hk_btns.items():
+        btn.configure(text=hk_pending.get(key, "?"))
 
 
 def reset_pad():
     pad_pending.clear()
     pad_pending.update(get_controls())
+    hk_pending.clear()
+    hk_pending.update(get_hotkeys())
     reload_pad_rows_only()
     if pad_msg is not None:
         pad_msg.configure(text="Valores recargados desde settings.ini.")
@@ -662,9 +733,36 @@ def reset_pad():
 def default_pad():
     pad_pending.clear()
     pad_pending.update(dict(PAD_DEFAULTS))
+    hk_pending.clear()
+    hk_pending.update(dict(HOTKEY_DEFAULTS))
     reload_pad_rows_only()
     if pad_msg is not None:
         pad_msg.configure(text="Valores por defecto cargados. Pulsa Aplicar para guardar.")
+
+
+def build_hk_rows():
+    _clear(hk_rows)
+    hk_btns.clear()
+    for key, label in (("FastForward", "⏩ Turbo (fast-forward)"),):
+        row = ctk.CTkFrame(hk_rows, fg_color="transparent")
+        row.pack(fill="x", padx=8, pady=1)
+        ctk.CTkLabel(row, text=label, font=ctk.CTkFont(size=12), text_color=TEXT,
+                     width=220, anchor="w").pack(side="left")
+        b = ctk.CTkButton(row, text=hk_pending.get(key, "?"), width=150,
+                          fg_color=PANEL, border_color=EDGE, border_width=1, text_color=CYAN,
+                          font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
+                          command=lambda k=key: start_capture("hk", k))
+        b.pack(side="right")
+        hk_btns[key] = b
+
+
+hk_title = ctk.CTkLabel(view_pad, text="⌨️  ATAJOS DE TECLADO",
+                        font=ctk.CTkFont(size=12, weight="bold"), text_color=ORANGE)
+hk_title.pack(anchor="w", padx=18, pady=(8, 2))
+hk_rows = ctk.CTkFrame(view_pad, fg_color="#0a0e18", border_color=EDGE,
+                       border_width=1, corner_radius=10)
+hk_rows.pack(fill="x", padx=18)
+build_hk_rows()
 
 
 pad_msg = ctk.CTkLabel(view_pad, text="Listo.", font=ctk.CTkFont(size=12),
@@ -1084,6 +1182,7 @@ def show_view(name):
         refresh_photos(reset=True)
     elif name == "play":
         refresh_status()
+        reload_cheat()
 
 
 # ---- asistente inicial: el usuario aporta emulador, BIOS y juego ----

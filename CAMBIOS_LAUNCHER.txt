@@ -221,4 +221,23 @@ El usuario aporta los 3 archivos; el launcher solo los configura.
   NADA de duckstation/, vice/ (juego), bios/, rutas.json, saves.
 - El launcher fue desarrollado 100% con inteligencia artificial
   (crédito agregado al README).
+
+----------------------------------------------------------------
+10) TRUCOS (cheat Vice siempre activo, con interruptor)
+----------------------------------------------------------------
+- launcher-py/cheats.py (NUEVO): escribe cheats/SLUS-01032-PC.cht
+  (nombre que DuckStation reconoce por patrón SLUS-01032*.cht) con el
+  bloque [AutoEvo General R1+Select] (Gameshark, EndFrame; fusiona el
+  bloque sin borrar otros cheats del jugador) y gamesettings/
+  SLUS-01032.ini con [Cheats] EnableCheats + lista Enable de líneas
+  repetidas (edición manual línea por línea para no colapsarlas,
+  resto del ini intacto + .bak). OFF quita el nombre de Enable (si no
+  quedan, EnableCheats=false); el .cht se conserva.
+- ui.py, sección TRUCOS en JUGAR: interruptor (empieza OFF; el
+  jugador lo activa a mano y su elección persiste porque vive en sus
+  archivos locales, no en el .exe). Requiere DuckStation cerrado. Cheat: D4000000 0108 / 801384B6 0090
+  (R1+Select 2s en campo).
+- MANDO: fila extra "⏩ Turbo (fast-forward)" remapeable (escribe
+  [Hotkeys] FastForward; por defecto Tab). Comparte captura,
+  Aplicar, Recargar y Por defecto con el resto del mando.
 ================================================================
