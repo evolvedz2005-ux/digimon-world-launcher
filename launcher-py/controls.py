@@ -147,8 +147,10 @@ def set_controls(values: dict, path=None) -> dict:
         return {"ok": False, "error": str(e)}
 
 
-HOTKEYS = [("FastForward", "Turbo (fast-forward)")]
-HOTKEY_DEFAULTS = {"FastForward": "Tab"}
+HOTKEYS = [("FastForward", "Turbo (fast-forward)"),
+           ("SaveSelectedSaveState", "Guardar estado"),
+           ("LoadSelectedSaveState", "Cargar estado")]
+HOTKEY_DEFAULTS = {"FastForward": "Tab", "SaveSelectedSaveState": "F2", "LoadSelectedSaveState": "F1"}
 
 
 def get_hotkeys(path=None) -> dict:
@@ -188,7 +190,7 @@ def set_hotkey(name: str, key: str, path=None) -> dict:
         cp.set("Hotkeys", name, f"Keyboard/{key}")
         with open(p, "w", encoding="utf-8") as f:
             cp.write(f)
-        return {"ok": True, "message": f"Turbo guardado: {key}."}
+        return {"ok": True, "message": f"Atajo guardado: {name} = {key}."}
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "error": str(e)}
 

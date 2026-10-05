@@ -28,11 +28,12 @@ CHEAT_DESC = (
     "Controla la evolución de tu Digimon: con el interruptor activado, "
     "pulsa R1+Select en campo y la evolución se dispara sin esperar a "
     "que ocurra sola. Sirve para evolucionar cuando TÚ quieras.\n\n"
-    "• Tras cargar partida puede tardar un poco en evolucionar: "
-    "usa la tecla de fast-forward justo después de la combinación para "
-    "pasar la espera rápido.\n"
+    "• Guarda con las teclas de guardado rápido (F2 guardar / F1 cargar): "
+    "no uses el guardado normal dentro del juego o habrá problemas.\n"
     "• Úsalo en partida nueva: no funciona en partidas ya creadas.\n"
-    "• Para activar o desactivar, cierra DuckStation primero."
+    "• Para activar o desactivar, cierra DuckStation primero.\n"
+    "• Con el truco activo, guarda con F2 y carga con F1 (emulador) "
+    "en vez del guardado interno del juego."
 )
 
 

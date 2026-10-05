@@ -22,7 +22,7 @@ from graphics import (
     ALLOWED_ASPECTS,
 )
 from controls import (BUTTONS, DEFAULTS as PAD_DEFAULTS, get_controls, get_raw_bindings,
-                      set_controls, tk_to_duck, get_hotkeys, set_hotkey, HOTKEY_DEFAULTS)
+                      set_controls, tk_to_duck, get_hotkeys, set_hotkey, HOTKEY_DEFAULTS, HOTKEYS)
 from bios import list_bios, import_bios, delete_bios
 from saves import list_saves, fmt_size, fmt_date, backup_saves, restore_backup
 from audio import get_audio, set_audio, TURBO_OPTIONS, TURBO_LABELS
@@ -339,7 +339,10 @@ ctk.CTkButton(truco, text="📖  Descripción", width=110, fg_color="transparent
               command=lambda: show_cheat_desc()).pack(side="right", padx=10)
 ctk.CTkLabel(view_play, text="(Úsalo en partida nueva: no funciona en partidas ya creadas.)",
              font=ctk.CTkFont(size=11, weight="bold"), text_color=RED,
-             wraplength=500, justify="left").pack(anchor="w", padx=20, pady=(4, 2))
+             wraplength=500, justify="left").pack(anchor="w", padx=20, pady=(4, 0))
+ctk.CTkLabel(view_play, text="⚠ Cambia esto con DuckStation cerrado: abierto no se aplica.",
+             font=ctk.CTkFont(size=11, weight="bold"), text_color=RED,
+             wraplength=500, justify="left").pack(anchor="w", padx=20, pady=(0, 2))
 
 
 def show_cheat_desc():
@@ -719,14 +722,19 @@ def on_capture(event):
 
 def apply_pad():
     res = set_controls(pad_pending)
-    res_hk = set_hotkey("FastForward", hk_pending.get("FastForward", "Tab"))
+    hk_bad = ""
+    for _name, _key in hk_pending.items():
+        _r = set_hotkey(_name, _key)
+        if not _r.get("ok"):
+            hk_bad = _r.get("error", "")
+            break
     if pad_msg is not None:
-        if res.get("ok") and res_hk.get("ok"):
-            pad_msg.configure(text=res.get("message", "") + f" Turbo: {hk_pending.get('FastForward')}.")
+        if res.get("ok") and not hk_bad:
+            pad_msg.configure(text=res.get("message", "") + " Atajos guardados.")
         elif not res.get("ok"):
             pad_msg.configure(text=res.get("error", ""))
         else:
-            pad_msg.configure(text=res_hk.get("error", ""))
+            pad_msg.configure(text=hk_bad)
     reload_pad_rows_only()
 
 
@@ -757,13 +765,18 @@ def default_pad():
         pad_msg.configure(text="Valores por defecto cargados. Pulsa Aplicar para guardar.")
 
 
+HK_LABELS = {"FastForward": "⏩ Turbo (fast-forward)",
+             "SaveSelectedSaveState": "💾 Guardar estado",
+             "LoadSelectedSaveState": "📂 Cargar estado"}
+
+
 def build_hk_rows():
     _clear(hk_rows)
     hk_btns.clear()
-    for key, label in (("FastForward", "⏩ Turbo (fast-forward)"),):
+    for key, _label in HOTKEYS:
         row = ctk.CTkFrame(hk_rows, fg_color="transparent")
         row.pack(fill="x", padx=8, pady=1)
-        ctk.CTkLabel(row, text=label, font=ctk.CTkFont(size=12), text_color=TEXT,
+        ctk.CTkLabel(row, text=HK_LABELS.get(key, key), font=ctk.CTkFont(size=12), text_color=TEXT,
                      width=220, anchor="w").pack(side="left")
         b = ctk.CTkButton(row, text=hk_pending.get(key, "?"), width=150,
                           fg_color=PANEL, border_color=EDGE, border_width=1, text_color=CYAN,
@@ -786,6 +799,9 @@ pad_msg = ctk.CTkLabel(view_pad, text="Listo.", font=ctk.CTkFont(size=12),
                        text_color=DIM, wraplength=500)
 pad_msg.pack(pady=(6, 2))
 
+ctk.CTkLabel(view_pad, text="⚠ Cierra DuckStation antes de Aplicar: con el emulador abierto los cambios no se guardan.",
+             font=ctk.CTkFont(size=11, weight="bold"), text_color=RED,
+             wraplength=500, justify="left").pack(anchor="w", padx=18, pady=(6, 0))
 padbtnrow = ctk.CTkFrame(view_pad, fg_color="transparent")
 padbtnrow.pack(fill="x", padx=18, pady=(2, 6))
 pad_apply = ctk.CTkButton(padbtnrow, text="💾  Aplicar mando", command=apply_pad,

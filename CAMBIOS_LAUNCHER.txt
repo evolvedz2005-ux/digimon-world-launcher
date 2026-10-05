@@ -237,6 +237,16 @@ El usuario aporta los 3 archivos; el launcher solo los configura.
   jugador lo activa a mano y su elección persiste porque vive en sus
   archivos locales, no en el .exe). Requiere DuckStation cerrado. Cheat: D4000000 0108 / 801384B6 0090
   (R1+Select 2s en campo).
+
+----------------------------------------------------------------
+11) Cambios menores post-2.0
+----------------------------------------------------------------
+- MANDO: filas remapeables ⏩ Turbo + 💾 Guardar estado (F2) +
+  📂 Cargar estado (F1); comparten captura/Aplicar/Recargar/Defecto.
+- Avisos rojos "DuckStation cerrado" en MANDO y TRUCOS.
+- TRUCOS: botón 📖 Descripción (popup), aviso partida nueva,
+  consejo guardar con F2/F1.
+================================================================
 - MANDO: fila extra "⏩ Turbo (fast-forward)" remapeable (escribe
   [Hotkeys] FastForward; por defecto Tab). Comparte captura,
   Aplicar, Recargar y Por defecto con el resto del mando.
