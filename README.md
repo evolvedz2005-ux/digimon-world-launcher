@@ -30,6 +30,9 @@ Guía completa con rutas y solución de problemas en `tutorial.txt`.
 - 🎮 Mando: remapeo de teclado del Jugador 1 (mando USB vía DuckStation)
 - 💾 BIOS: importar/cambiar tu `.bin` | 📦 Saves: respaldo y restauración
 - 🔊 Volumen + turbo | 📷 Galería de capturas (F10) | 🔍 Diagnóstico del sistema
+- 💊 TRUCOS (*Control de evolución*, R1+Select): en partida nueva actúa
+  al momento; tras **cargar partida** el temporizador debe descontarse en
+  tiempo de juego, así que usa el **fast-forward** para que haga efecto.
 
 ## Compilar desde el código
 

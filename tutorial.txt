@@ -68,11 +68,12 @@ PASO 3 · JUGAR Y AJUSTES
   volumen y turbo en JUGAR.
 - TRUCOS en JUGAR: el cheat Control de evolución viene desactivado;
   actívalo con su interruptor (se respeta tu elección). En el juego
-  pulsa R1+Select y controla la evolución al instante (úsalo en
+  pulsa R1+Select y controla la evolución (úsalo en
   partida nueva: no funciona en partidas ya creadas; guarda con F2
   y carga con F1, no uses el guardado normal del juego o habrá
-  problemas; a veces hay que usar el fast-forward para que haga
-  efecto).
+  problemas; en partida nueva actúa al momento, pero tras cargar el
+  temporizador debe descontarse en tiempo de juego: usa el
+  fast-forward para que haga efecto).
 - F10 dentro del juego = captura (ver pestaña FOTOS).
 - F1/F2 = cargar/guardar estado rápido, remapeables en MANDO.
 - TRUCOS: con el truco activo guarda con F2 y carga con F1

@@ -27,7 +27,8 @@ D4000000 0108
 CHEAT_DESC = (
     "Controla la evolución de tu Digimon: con el interruptor activado, "
     "pulsa R1+Select en campo y la evolución se dispara sin esperar a "
-    "que ocurra sola. Sirve para evolucionar cuando TÚ quieras.\n\n"
+    "que ocurra sola. Sirve para evolucionar cuando TÚ quieras "
+    "(tras cargar partida usa fast-forward para que haga efecto).\n\n"
     "• Guarda con las teclas de guardado rápido (F2 guardar / F1 cargar): "
     "no uses el guardado normal dentro del juego o habrá problemas.\n"
     "• Úsalo en partida nueva: no funciona en partidas ya creadas.\n"
