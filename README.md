@@ -33,7 +33,7 @@ Guía completa con rutas y solución de problemas en `tutorial.txt`.
 - 💊 TRUCOS (Control de evolución, R1+Select): truco que ayuda a
   controlar la evolución y evolucionar a placer, ya sin errores. En
   partida nueva actúa al momento; tras cargar partida el temporizador
-  debe descontarse en tiempo de juego.
+  debe descontarse en tiempo de juego al usarse el cheat.
 
 ## Compilar desde el código
 

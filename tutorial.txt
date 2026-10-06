@@ -66,11 +66,11 @@ PASO 3 · JUGAR Y AJUSTES
   botón y luego la tecla o el botón/stick del mando), incluida la
   tecla de ⏩ turbo; gráficos (resolución, presets) en GRÁFICOS;
   volumen y turbo en JUGAR.
-- 💊 TRUCOS (Control de evolución, R1+Select): en partida nueva actúa
-  al momento; tras cargar partida el temporizador debe descontarse en
-  tiempo de juego, así que usa el fast-forward para que haga efecto.
-  Viene desactivado; actívalo con su interruptor. Úsalo en partida
-  nueva.
+- 💊 TRUCOS (Control de evolución, R1+Select): truco que ayuda a
+  controlar la evolución y evolucionar a placer, ya sin errores. En
+  partida nueva actúa al momento; tras cargar partida el temporizador
+  debe descontarse en tiempo de juego al usarse el cheat. Viene
+  desactivado; actívalo con su interruptor. Úsalo en partida nueva.
 - F10 dentro del juego = captura (ver pestaña FOTOS).
 - F1/F2 = cargar/guardar estado rápido, remapeables en MANDO.
 

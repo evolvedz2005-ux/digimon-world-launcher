@@ -19,15 +19,18 @@ GAME_INI = "SLUS-01032.ini"
 CHEAT_BLOCK = """[Control de evolución]
 Type = Gameshark
 Activation = EndFrame
-Description = Controla la evolución de tu Digimon: pulsa R1+Select en campo, efecto al instante. evoTimer=144. (Usar en partida nueva.)
+Description = Controla la evolución de tu Digimon: pulsa R1+Select en campo. Limpia bloqueo de carga y evoTimer=144. (Usar en partida nueva.)
 Author = Nyxen
+D4000000 0108
+80134CA8 0000
 D4000000 0108
 801384B6 0090"""
 
 CHEAT_DESC = (
-    "💊 TRUCOS (Control de evolución, R1+Select): en partida nueva actúa "
-    "al momento; tras cargar partida el temporizador debe descontarse en "
-    "tiempo de juego, así que usa el fast-forward para que haga efecto.\n\n"
+    "💊 TRUCOS (Control de evolución, R1+Select): truco que ayuda a "
+    "controlar la evolución y evolucionar a placer, ya sin errores. En "
+    "partida nueva actúa al momento; tras cargar partida el temporizador "
+    "debe descontarse en tiempo de juego al usarse el cheat.\n\n"
     "• Úsalo en partida nueva: no funciona en partidas ya creadas.\n"
     "• Para activar o desactivar, cierra DuckStation primero."
 )
