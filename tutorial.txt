@@ -26,7 +26,9 @@ PASO 0 · QUÉ NECESITAS (consíguelo ANTES de abrir el launcher)
      C:\Juegos\DuckStation\bios\SCPH1001.BIN
    (El botón Importar del asistente la copia ahí solo por ti.)
 3. JUEGO:
-   Tu imagen del juego: .cue (+ su .bin), .iso o .chd.
+   Tu imagen del juego: .cue (+ su .bin), .iso o .chd. Tiene que ser
+   región USA (SLUS-01032, original o hack basado en él); otras
+   regiones no están soportadas.
    Guárdala donde quieras, por ejemplo:
      C:\Juegos\PS1\
 

@@ -16,6 +16,8 @@ No incluye emulador, BIOS ni juego: debes aportarlos (ver tutorial).
    [duckstation.org](https://www.duckstation.org/) y crea el archivo vacío
    `portable.txt` junto a su `.exe`.
 2. Abre el launcher y completa el asistente: **Emulador → BIOS → Juego**.
+   ⚠️ El juego tiene que ser región **USA** (SLUS-01032); otras regiones
+   no están soportadas.
 3. Pulsa **▶ JUGAR** una vez antes de tocar los gráficos (DuckStation debe
    crear su `settings.ini` primero).
 
