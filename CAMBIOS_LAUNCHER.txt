@@ -249,10 +249,14 @@ El usuario aporta los 3 archivos; el launcher solo los configura.
 - MANDO: captura con botones/sticks del mando (bindings XInput-0/…,
   activa [InputSources] XInput solo); atajos F2/F1 remapeables.
 - Avisos rojos "DuckStation cerrado" en MANDO y TRUCOS.
-- TRUCOS: botón 📖 Descripción (popup), aviso partida nueva,
-  consejo guardar con F2/F1.
-================================================================
-- MANDO: fila extra "⏩ Turbo (fast-forward)" remapeable (escribe
-  [Hotkeys] FastForward; por defecto Tab). Comparte captura,
-  Aplicar, Recargar y Por defecto con el resto del mando.
+- TRUCOS: botón 📖 Descripción (popup), aviso partida nueva.
+
+----------------------------------------------------------------
+12) Descripción única del truco (v2.2)
+----------------------------------------------------------------
+- Fuera el mensaje de guardar con F1/F2 en descripción (popup),
+  tutorial y README. Texto único en los 3 lados: "💊 TRUCOS (Control
+  de evolución, R1+Select): en partida nueva actúa al momento; tras
+  cargar partida el temporizador debe descontarse en tiempo de juego,
+  así que usa el fast-forward para que haga efecto."
 ================================================================
